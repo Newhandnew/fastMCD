@@ -22,6 +22,7 @@
 #pragma once
 
 #include <cv.h>
+#include "opencv2/calib3d/calib3d.hpp"
 
 #define GRID_SIZE_W (32)
 #define GRID_SIZE_H (24)
