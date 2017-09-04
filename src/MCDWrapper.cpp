@@ -78,7 +78,8 @@ void
 	cvCvtColor(imgIpl, imgIplTemp, CV_RGB2GRAY);
 	cvSmooth(imgIplTemp, imgGray, CV_MEDIAN, 5);
 
-	m_LucasKanade.Init(imgGray);
+	Mat matGray = cvarrToMat(imgGray);
+	m_LucasKanade.Init(matGray);
 	BGModel.init(imgGray);
 
 	cvCopy(imgGray, imgGrayPrev);
@@ -110,7 +111,8 @@ void MCDWrapper::Run()
 	// Calculate Backward homography
 	// Get H
 	double h[9];
-	m_LucasKanade.RunTrack(imgGray, 0);
+	Mat matGray = cvarrToMat(imgGray);
+	m_LucasKanade.RunTrack(matGray);
 	m_LucasKanade.GetHomography(h);
 	BGModel.motionCompensate(h);
 
