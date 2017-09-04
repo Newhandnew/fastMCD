@@ -38,14 +38,13 @@ class KLTWrapper {
 	// IplImage *maskimg;
 
 	// For LK
-	Mat image;
-	Mat imgPrevGray; //*pyramid, *prev_pyramid, *swap_temp;
+	Mat imgPrevGray;
 	int win_size;
 	int MAX_COUNT;
-	vector<Point2f> prevPoints, points;	//, swap_points;
+	int numGridCols, numGridRows;
+	vector<Point2f> gridPoints, currentPoints;
 
 	int count;
-	int flags;
 
 	// For Homography Matrix
 	double matH[9];
@@ -54,16 +53,17 @@ class KLTWrapper {
 	vector <float> err;
 	vector <uchar> status;
 
+	char fTest;
+
  private:
-	void SwapData(Mat imgGray);
 	void MakeHomoGraphy(int *pnMatch, int nCnt);
+	void InitFeatures();
 
  public:
 	 KLTWrapper(void);
 	~KLTWrapper(void);
 
 	void Init(Mat imgGray);
-	void InitFeatures(Mat imgGray);
 	void RunTrack(Mat imgGray);	// with MakeHomography
 	void GetHomography(double *pmatH);
 };
