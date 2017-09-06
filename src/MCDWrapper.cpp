@@ -60,34 +60,37 @@ void
 {
 
 	frm_cnt = 0;
-	imgIpl = in_imgIpl;
+	imgFrame = 	cvarrToMat(in_imgIpl);
 
 	// Allocate
 	imgIplTemp = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	imgGray = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	imgGrayPrev = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	imgGaussLarge = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	imgGaussSmall = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	imgDOG = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
+	// imgGray = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
+	// imgGrayPrev = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
+	// imgGaussLarge = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
+	// imgGaussSmall = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
+	// imgDOG = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 
 	detect_img = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 
 	//TODO directly retrieve imgIpl (change to Mat later)
 
 	// Smoothing using median filter
-	cvCvtColor(imgIpl, imgIplTemp, CV_RGB2GRAY);
-	cvSmooth(imgIplTemp, imgGray, CV_MEDIAN, 5);
+	cvtColor(imgFrame, imgGray, CV_RGB2GRAY);
+	medianBlur(imgGray, imgGray, 5);
+	imshow("blur", imgGray);
+	waitKey();
+	// Mat matGray = cvarrToMat(imgGray);
+	m_LucasKanade.Init(imgGray);
 
-	Mat matGray = cvarrToMat(imgGray);
-	m_LucasKanade.Init(matGray);
-	BGModel.init(imgGray);
+	*imgIplTemp = IplImage(imgGray);
+	BGModel.init(imgIplTemp);
 
-	cvCopy(imgGray, imgGrayPrev);
+	imgGray.copyTo(imgGrayPrev);
 }
 
 void MCDWrapper::Run()
 {
-
+	cout << "in MCDWrapper run" << endl;
 	frm_cnt++;
 
 	timeval tic, toc, tic_total, toc_total;
@@ -97,10 +100,10 @@ void MCDWrapper::Run()
 	float rt_total;		// Background Subtraction time
 
 	//--TIME START
-	cvCvtColor(imgIpl, imgIplTemp, CV_RGB2GRAY);
+	cvtColor(imgFrame, imgGray, CV_RGB2GRAY);
 	gettimeofday(&tic, NULL);
 	// Smmothign using median filter
-	cvSmooth(imgIplTemp, imgGray, CV_MEDIAN, 5);
+	medianBlur(imgGray, imgGray, 5);
 
 	//--TIME END
 	gettimeofday(&toc, NULL);
@@ -111,8 +114,7 @@ void MCDWrapper::Run()
 	// Calculate Backward homography
 	// Get H
 	double h[9];
-	Mat matGray = cvarrToMat(imgGray);
-	m_LucasKanade.RunTrack(matGray);
+	m_LucasKanade.RunTrack(imgGray);
 	m_LucasKanade.GetHomography(h);
 	BGModel.motionCompensate(h);
 
@@ -152,7 +154,7 @@ void MCDWrapper::Run()
 	//      fclose(fileRunTime);
 	// }
 
-	cvCopy(imgGray, imgGrayPrev);
+	imgGray.copyTo(imgGrayPrev);
 	cvWaitKey(10);
 
 }

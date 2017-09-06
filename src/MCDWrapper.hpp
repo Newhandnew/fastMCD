@@ -32,10 +32,9 @@
 #include	<algorithm>
 /************************************************************************/
 /* Includes for the OpenCV                                              */
-/************************************************************************/
-#include	<cv.h>
-#include	<highgui.h>
-#include	<opencv2/features2d/features2d.hpp>
+#include "opencv2/opencv.hpp" 
+// #include	<highgui.h>
+// #include	<opencv2/features2d/features2d.hpp>
 
 // Inlcludes for this wrapper
 #include "KLTWrapper.hpp"
@@ -57,17 +56,17 @@ class MCDWrapper {
 
 	/* Note that the variable names are legacy */
 	KLTWrapper m_LucasKanade;
-	IplImage *imgIpl;
+	Mat imgFrame;
 	IplImage *imgIplTemp;
-	IplImage *imgGray;
-	IplImage *imgGrayPrev;
+	Mat imgGray;
+	Mat imgGrayPrev;
 
-	IplImage *imgGaussLarge;
-	IplImage *imgGaussSmall;
-	IplImage *imgDOG;
+	Mat imgGaussLarge;
+	Mat imgGaussSmall;
+	Mat imgDOG;
 
-	IplImage *debugCopy;
-	IplImage *debugDisp;
+	Mat debugCopy;
+	Mat debugDisp;
 
 	ProbModel BGModel;
 
@@ -79,7 +78,7 @@ class MCDWrapper {
 	 MCDWrapper();
 	~MCDWrapper();
 
-	void Init(IplImage * in_imgIpl);
+	void Init(IplImage *in_imgIpl);
 	void Run();
 
 };
