@@ -370,14 +370,21 @@ class ProbModel {
 
 	}
 
-	Mat update(Mat lastDetectImg) 
+	Mat update(Mat imgGray) 
 	{
 		Mat imgOutput;
+		bool fEmpty;
 		// BYTE *pOut;
-		if (lastDetectImg.empty() == 0) {
-			imgOutput = Mat(lastDetectImg.size(), CV_8UC1);
+		if (imgGray.empty() == 0) {
+			fEmpty = 0;
+			imgOutput = Mat(imgGray.size(), CV_8UC1);
 			// cvSet(pOutputImg, CV_RGB(0, 0, 0));
 			// pOut = (BYTE *) pOutputImg->imageData;
+		}
+		else
+		{
+			fEmpty = 1;
+			imgGray = imgCurrentGray;
 		}
 
 		int curModelWidth = modelWidth;
@@ -410,13 +417,13 @@ class ProbModel {
 
 						if (idx_i < 0 || idx_i >= obsWidth || idx_j < 0 || idx_j >= obsHeight)
 							continue;
-
-						cur_mean += imgCurrentGray.at<uchar>(idx_i, idx_j);
+						// cout << "current gray (" << idx_i << ", " << idx_j << "), pixel: " << (int)imgGray.at<uchar>(idx_j, idx_i) << endl;
+						cur_mean += imgGray.at<uchar>(idx_j, idx_i);
 						elem_cnt += 1.0;
 					}
 				}	//loop for pixels
 				cur_mean /= elem_cnt;
-
+				// cout << "cur_mean: " << cur_mean << endl;
 				//////////////////////////////////////////////////////////////////////////
 				// Make Oldest Idx to 0 (swap)
 				int oldIdx = 0;
@@ -486,7 +493,7 @@ class ProbModel {
 						if (idx_i < 0 || idx_i >= obsWidth || idx_j < 0 || idx_j >= obsHeight)
 							continue;
 
-						obs_mean[nMatchIdx] += imgCurrentGray.at<uchar>(idx_i, idx_j);
+						obs_mean[nMatchIdx] += imgGray.at<uchar>(idx_j, idx_i);
 						++nElemCnt[nMatchIdx];
 					}
 				}
@@ -538,16 +545,16 @@ class ProbModel {
 						}
 
 						float pixelDist = 0.0;
-						float fDiff = imgCurrentGray.at<uchar>(idx_i, idx_j) - m_Mean[nMatchIdx][bIdx_i + bIdx_j * modelWidth];
+						float fDiff = imgGray.at<uchar>(idx_j, idx_i) - m_Mean[nMatchIdx][bIdx_i + bIdx_j * modelWidth];
 						pixelDist += pow(fDiff, (int)2);
 
-						m_DistImg[idx_i + idx_j * obsWidth] = pow(imgCurrentGray.at<uchar>(idx_i, idx_j) - m_Mean[0][bIdx_i + bIdx_j * modelWidth], (int)2);
+						m_DistImg[idx_i + idx_j * obsWidth] = pow(imgGray.at<uchar>(idx_j, idx_i) - m_Mean[0][bIdx_i + bIdx_j * modelWidth], (int)2);
 
-						if (lastDetectImg.empty() == 0 && m_Age_Temp[0][bIdx_i + bIdx_j * modelWidth] > 1) {
+						if (fEmpty == 0 && m_Age_Temp[0][bIdx_i + bIdx_j * modelWidth] > 1) {
 
 							BYTE valOut = m_DistImg[idx_i + idx_j * obsWidth] > VAR_THRESH_FG_DETERMINE * m_Var_Temp[0][bIdx_i + bIdx_j * modelWidth] ? 255 : 0;
 
-							imgOutput.at<uchar>(idx_i, idx_j) = valOut;
+							imgOutput.at<uchar>(idx_j, idx_i) = valOut;
 						}
 
 						obs_var[nMatchIdx] = MAX(obs_var[nMatchIdx], pixelDist);

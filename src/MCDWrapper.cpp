@@ -85,12 +85,11 @@ void
 	// *imgIplTemp = IplImage(imgGray);
 	BGModel.init(imgGray);
 
-	imgGray.copyTo(imgGrayPrev);
+	// imgGray.copyTo(imgGrayPrev);
 }
 
 void MCDWrapper::Run()
 {
-	cout << "in MCDWrapper run" << endl;
 	frm_cnt++;
 
 	timeval tic, toc, tic_total, toc_total;
@@ -136,7 +135,7 @@ void MCDWrapper::Run()
 	// cv::Mat mean = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Mean[0]);
 	// cv::imshow("mean",mean/255.0);
 	// cv::Mat var = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Var[0]);
-	// cv::imshow("var",var/255.0);
+	// cv::imshow("var",var/255.0);b
 	// cv::Mat age = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Age[0]);
 	// cv::imshow("age",age/255.0);
 
@@ -145,7 +144,7 @@ void MCDWrapper::Run()
 	for (int i = 0; i < 100; ++i) {
 		printf("\b");
 	}
-	printf("PP: %.2f(ms)\tOF: %.2f(ms)\tBGM: %.2f(ms)\tTotal time: \t%.2f(ms)", MAX(0.0, rt_preProc), MAX(0.0, rt_motionComp), MAX(0.0, rt_modelUpdate), MAX(0.0, rt_total));
+	printf("PP: %.2f(ms)\tOF: %.2f(ms)\tBGM: %.2f(ms)\tTotal time: \t%.2f(ms) \n", MAX(0.0, rt_preProc), MAX(0.0, rt_motionComp), MAX(0.0, rt_modelUpdate), MAX(0.0, rt_total));
 
 	// Uncomment this block if you want to save runtime to txt
 	// if(rt_preProc >= 0 && rt_motionComp >= 0 && rt_modelUpdate >= 0 && rt_total >= 0){
@@ -154,7 +153,7 @@ void MCDWrapper::Run()
 	//      fclose(fileRunTime);
 	// }
 
-	imgGray.copyTo(imgGrayPrev);
+	// imgGray.copyTo(imgGrayPrev);
 	cvWaitKey(10);
 
 }

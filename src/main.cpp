@@ -135,52 +135,14 @@ int main(int argc, char *argv[])
 
 		}
 		Mat imgDetect = mcdwrapper->getDetectImage();
-		if (imgDetect.empty() == 0)
+		cout << "non zero: " << countNonZero(imgDetect) << endl;
+		if (countNonZero(imgDetect) > 0)
 		{
 			imshow("detect image", imgDetect);
 			waitKey();
 
 
-		// Display detection results as overlay
-		for (int j = 0; j < frame_copy->height; ++j) {
-			for (int i = 0; i < frame_copy->width; ++i) {
-
-				float draw_orig = 0.5;
-
-				// BYTE *pMaskImg = (BYTE *) (mcdwrapper->detect_img->imageData);
-				// int widthstepMsk = mcdwrapper->detect_img->widthStep;
-
-				int mask_data = imgDetect.at<uchar>(i, j); //pMaskImg[i + j * widthstepMsk];
-
-				((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2];
-				((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1];
-				((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 0] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 0];
-
-				if (frame_num > 1) {
-					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] += mask_data > 0 ? 255 * (1.0 - draw_orig) : 0;
-				}
-
-			}
-		}
-
-		// Print some frame numbers as well
-		char buf[100];
-		sprintf(buf, "%d", frame_num);
-		CvFont font;
-		double hScale = 0.5;
-		double vScale = 0.5;
-		int lineWidth = 2;
-		cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, hScale, vScale, 0, lineWidth);
-		cvPutText(frame_copy, buf, cvPoint(10, 20), &font, cvScalar(255, 255, 0));
-
-		// Show image
-		cvShowImage(window_name, frame_copy);
-
-		// // DISPLAY---- and write to png
-		// cvWriteFrame(pVideoOut, frame_copy);
-
-		if (atoi((char *)(argv[2])) > 0 && frame_num >= 1) {
-
+			// Display detection results as overlay
 			for (int j = 0; j < frame_copy->height; ++j) {
 				for (int i = 0; i < frame_copy->width; ++i) {
 
@@ -189,18 +151,57 @@ int main(int argc, char *argv[])
 					// BYTE *pMaskImg = (BYTE *) (mcdwrapper->detect_img->imageData);
 					// int widthstepMsk = mcdwrapper->detect_img->widthStep;
 
-					int mask_data = imgDetect.at<uchar>(i, j); //pMaskImg[i + j * widthstepMsk];
+					int mask_data = imgDetect.at<uchar>(j, i); //pMaskImg[i + j * widthstepMsk];
 
-					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] = mask_data > 0 ? 255 : 0;
-					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1] = mask_data > 0 ? 255 : 0;
-					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 0] = mask_data > 0 ? 255 : 0;
+					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2];
+					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1];
+					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 0] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 0];
+
+					if (frame_num > 1) {
+						((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] += mask_data > 0 ? 255 * (1.0 - draw_orig) : 0;
+					}
+
 				}
 			}
 
-			char bufbuf[1000];
-			sprintf(bufbuf, "./results/%s_frm%05d.png", test_file, frame_num);
-			cvSaveImage(bufbuf, frame_copy);
-		}
+			// Print some frame numbers as well
+			char buf[100];
+			sprintf(buf, "%d", frame_num);
+			CvFont font;
+			double hScale = 0.5;
+			double vScale = 0.5;
+			int lineWidth = 2;
+			cvInitFont(&font, CV_FONT_HERSHEY_SIMPLEX, hScale, vScale, 0, lineWidth);
+			cvPutText(frame_copy, buf, cvPoint(10, 20), &font, cvScalar(255, 255, 0));
+
+			// Show image
+			cvShowImage(window_name, frame_copy);
+
+			// // DISPLAY---- and write to png
+			// cvWriteFrame(pVideoOut, frame_copy);
+
+			if (atoi((char *)(argv[2])) > 0 && frame_num >= 1) {
+
+				for (int j = 0; j < frame_copy->height; ++j) {
+					for (int i = 0; i < frame_copy->width; ++i) {
+
+						float draw_orig = 0.5;
+
+						// BYTE *pMaskImg = (BYTE *) (mcdwrapper->detect_img->imageData);
+						// int widthstepMsk = mcdwrapper->detect_img->widthStep;
+
+						int mask_data = imgDetect.at<uchar>(j, i); //pMaskImg[i + j * widthstepMsk];
+
+						((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] = mask_data > 0 ? 255 : 0;
+						((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1] = mask_data > 0 ? 255 : 0;
+						((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 0] = mask_data > 0 ? 255 : 0;
+					}
+				}
+
+				char bufbuf[1000];
+				sprintf(bufbuf, "./results/%s_frm%05d.png", test_file, frame_num);
+				cvSaveImage(bufbuf, frame_copy);
+			}
 		}
 		//KeyBoard Process
 		switch (cvWaitKey(1)) {

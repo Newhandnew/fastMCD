@@ -59,7 +59,7 @@ class MCDWrapper {
 	Mat imgFrame;
 	// IplImage *imgIplTemp;
 	Mat imgGray;
-	Mat imgGrayPrev;
+	// Mat imgGrayPrev;
 
 	Mat imgGaussLarge;
 	Mat imgGaussSmall;
