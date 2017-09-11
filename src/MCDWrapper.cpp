@@ -56,21 +56,21 @@ MCDWrapper::~MCDWrapper()
 }
 
 void
- MCDWrapper::Init(IplImage * in_imgIpl)
+ MCDWrapper::Init(Mat imgInput)
 {
 
 	frm_cnt = 0;
-	imgFrame = 	cvarrToMat(in_imgIpl);
-
+	// imgFrame = 	cvarrToMat(in_imgIpl);
+	imgFrame = imgInput;
 	// Allocate
-	imgIplTemp = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
+	// imgIplTemp = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 	// imgGray = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 	// imgGrayPrev = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 	// imgGaussLarge = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 	// imgGaussSmall = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 	// imgDOG = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 
-	detect_img = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
+	// detect_img = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
 
 	//TODO directly retrieve imgIpl (change to Mat later)
 
@@ -82,8 +82,8 @@ void
 	// Mat matGray = cvarrToMat(imgGray);
 	m_LucasKanade.Init(imgGray);
 
-	*imgIplTemp = IplImage(imgGray);
-	BGModel.init(imgIplTemp);
+	// *imgIplTemp = IplImage(imgGray);
+	BGModel.init(imgGray);
 
 	imgGray.copyTo(imgGrayPrev);
 }
@@ -125,7 +125,7 @@ void MCDWrapper::Run()
 	//--TIME START
 	gettimeofday(&tic, NULL);
 	// Update BG Model and Detect
-	BGModel.update(detect_img);
+	detect_img = BGModel.update(imgGray);
 	//--TIME END
 	gettimeofday(&toc, NULL);
 	rt_modelUpdate = (float)(toc.tv_usec - tic.tv_usec) / 1000.0;
@@ -157,6 +157,11 @@ void MCDWrapper::Run()
 	imgGray.copyTo(imgGrayPrev);
 	cvWaitKey(10);
 
+}
+
+Mat MCDWrapper::getDetectImage()
+{
+	return detect_img;
 }
 
 #endif				// _MCDWRAPPER_CPP_

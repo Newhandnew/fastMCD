@@ -48,16 +48,16 @@ class MCDWrapper {
 /************************************************************************/
 /*  Internal Variables					                                */
 /************************************************************************/
- public:
+ private:
 
 	int frm_cnt;
 
-	IplImage *detect_img;
+	Mat detect_img;
 
 	/* Note that the variable names are legacy */
 	KLTWrapper m_LucasKanade;
 	Mat imgFrame;
-	IplImage *imgIplTemp;
+	// IplImage *imgIplTemp;
 	Mat imgGray;
 	Mat imgGrayPrev;
 
@@ -78,8 +78,9 @@ class MCDWrapper {
 	 MCDWrapper();
 	~MCDWrapper();
 
-	void Init(IplImage *in_imgIpl);
+	void Init(Mat imgInput);
 	void Run();
+	Mat getDetectImage();
 
 };
 

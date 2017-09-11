@@ -31,7 +31,7 @@
 #include	<vector>
 #include	<algorithm>
 
-#include "cv.h"
+#include "opencv2/opencv.hpp" 
 
 /************************************************************************/
 /*  Necessary includes for this Algorithm                               */
@@ -43,7 +43,7 @@ class ProbModel {
 
  public:
 
-	IplImage * m_Cur;
+	Mat imgCurrentGray;
 	float *m_DistImg;
 
 	float *m_Mean[NUM_MODELS];
@@ -118,14 +118,14 @@ class ProbModel {
 
 	}
 
-	void init(IplImage * pInputImg) {
+	void init(Mat imgInput) {
 
 		uninit();
 
-		m_Cur = pInputImg;
+		imgCurrentGray = imgInput;
 
-		obsWidth = pInputImg->width;
-		obsHeight = pInputImg->height;
+		obsWidth = imgInput.cols;
+		obsHeight = imgInput.rows;
 
 		modelWidth = obsWidth / BLOCK_SIZE;
 		modelHeight = obsHeight / BLOCK_SIZE;
@@ -162,7 +162,7 @@ class ProbModel {
 		h[8] = 1.0;
 
 		motionCompensate(h);
-		update(NULL);
+		update(Mat());
 
 	}
 
@@ -171,9 +171,9 @@ class ProbModel {
 		int curModelWidth = modelWidth;
 		int curModelHeight = modelHeight;
 
-		BYTE *pCur = (BYTE *) m_Cur->imageData;
+		// BYTE *pCur = (BYTE *) imgCurrentGray->imageData;
 
-		int obsWidthStep = m_Cur->widthStep;
+		// int obsWidthStep = imgCurrentGray->widthStep;
 
 		// compensate models for the current view
 		for (int j = 0; j < curModelHeight; ++j) {
@@ -370,20 +370,22 @@ class ProbModel {
 
 	}
 
-	void update(IplImage * pOutputImg) {
-
-		BYTE *pOut;
-		if (pOutputImg != NULL) {
-			cvSet(pOutputImg, CV_RGB(0, 0, 0));
-			pOut = (BYTE *) pOutputImg->imageData;
+	Mat update(Mat lastDetectImg) 
+	{
+		Mat imgOutput;
+		// BYTE *pOut;
+		if (lastDetectImg.empty() == 0) {
+			imgOutput = Mat(lastDetectImg.size(), CV_8UC1);
+			// cvSet(pOutputImg, CV_RGB(0, 0, 0));
+			// pOut = (BYTE *) pOutputImg->imageData;
 		}
 
 		int curModelWidth = modelWidth;
 		int curModelHeight = modelHeight;
 
-		BYTE *pCur = (BYTE *) m_Cur->imageData;
+		// BYTE *pCur = (BYTE *) imgCurrentGray->imageData;
 
-		int obsWidthStep = m_Cur->widthStep;
+		// int obsWidthStep = imgCurrentGray->widthStep;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Find Matching Model
@@ -409,7 +411,7 @@ class ProbModel {
 						if (idx_i < 0 || idx_i >= obsWidth || idx_j < 0 || idx_j >= obsHeight)
 							continue;
 
-						cur_mean += pCur[idx_i + idx_j * obsWidthStep];
+						cur_mean += imgCurrentGray.at<uchar>(idx_i, idx_j);
 						elem_cnt += 1.0;
 					}
 				}	//loop for pixels
@@ -484,7 +486,7 @@ class ProbModel {
 						if (idx_i < 0 || idx_i >= obsWidth || idx_j < 0 || idx_j >= obsHeight)
 							continue;
 
-						obs_mean[nMatchIdx] += pCur[idx_i + idx_j * obsWidthStep];
+						obs_mean[nMatchIdx] += imgCurrentGray.at<uchar>(idx_i, idx_j);
 						++nElemCnt[nMatchIdx];
 					}
 				}
@@ -536,16 +538,16 @@ class ProbModel {
 						}
 
 						float pixelDist = 0.0;
-						float fDiff = pCur[idx_i + idx_j * obsWidthStep] - m_Mean[nMatchIdx][bIdx_i + bIdx_j * modelWidth];
+						float fDiff = imgCurrentGray.at<uchar>(idx_i, idx_j) - m_Mean[nMatchIdx][bIdx_i + bIdx_j * modelWidth];
 						pixelDist += pow(fDiff, (int)2);
 
-						m_DistImg[idx_i + idx_j * obsWidthStep] = pow(pCur[idx_i + idx_j * obsWidthStep] - m_Mean[0][bIdx_i + bIdx_j * modelWidth], (int)2);
+						m_DistImg[idx_i + idx_j * obsWidth] = pow(imgCurrentGray.at<uchar>(idx_i, idx_j) - m_Mean[0][bIdx_i + bIdx_j * modelWidth], (int)2);
 
-						if (pOutputImg != NULL && m_Age_Temp[0][bIdx_i + bIdx_j * modelWidth] > 1) {
+						if (lastDetectImg.empty() == 0 && m_Age_Temp[0][bIdx_i + bIdx_j * modelWidth] > 1) {
 
-							BYTE valOut = m_DistImg[idx_i + idx_j * obsWidthStep] > VAR_THRESH_FG_DETERMINE * m_Var_Temp[0][bIdx_i + bIdx_j * modelWidth] ? 255 : 0;
+							BYTE valOut = m_DistImg[idx_i + idx_j * obsWidth] > VAR_THRESH_FG_DETERMINE * m_Var_Temp[0][bIdx_i + bIdx_j * modelWidth] ? 255 : 0;
 
-							pOut[idx_i + idx_j * obsWidthStep] = valOut;
+							imgOutput.at<uchar>(idx_i, idx_j) = valOut;
 						}
 
 						obs_var[nMatchIdx] = MAX(obs_var[nMatchIdx], pixelDist);
@@ -578,9 +580,8 @@ class ProbModel {
 				}
 			}
 		}
-
+		return imgOutput;
 	}
-
 };
 
 #endif				// _PROB_MODEL_H_

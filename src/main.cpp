@@ -125,7 +125,8 @@ int main(int argc, char *argv[])
 		if (frame_num == 1) {
 
 			// Init the wrapper for first frame
-			mcdwrapper->Init(raw_img);
+			Mat imgFrame = 	cvarrToMat(raw_img);
+			mcdwrapper->Init(imgFrame);
 
 		} else {
 
@@ -133,6 +134,12 @@ int main(int argc, char *argv[])
 			mcdwrapper->Run();
 
 		}
+		Mat imgDetect = mcdwrapper->getDetectImage();
+		if (imgDetect.empty() == 0)
+		{
+			imshow("detect image", imgDetect);
+			waitKey();
+
 
 		// Display detection results as overlay
 		for (int j = 0; j < frame_copy->height; ++j) {
@@ -140,10 +147,10 @@ int main(int argc, char *argv[])
 
 				float draw_orig = 0.5;
 
-				BYTE *pMaskImg = (BYTE *) (mcdwrapper->detect_img->imageData);
-				int widthstepMsk = mcdwrapper->detect_img->widthStep;
+				// BYTE *pMaskImg = (BYTE *) (mcdwrapper->detect_img->imageData);
+				// int widthstepMsk = mcdwrapper->detect_img->widthStep;
 
-				int mask_data = pMaskImg[i + j * widthstepMsk];
+				int mask_data = imgDetect.at<uchar>(i, j); //pMaskImg[i + j * widthstepMsk];
 
 				((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2];
 				((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1] = draw_orig * ((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1];
@@ -179,10 +186,10 @@ int main(int argc, char *argv[])
 
 					float draw_orig = 0.5;
 
-					BYTE *pMaskImg = (BYTE *) (mcdwrapper->detect_img->imageData);
-					int widthstepMsk = mcdwrapper->detect_img->widthStep;
+					// BYTE *pMaskImg = (BYTE *) (mcdwrapper->detect_img->imageData);
+					// int widthstepMsk = mcdwrapper->detect_img->widthStep;
 
-					int mask_data = pMaskImg[i + j * widthstepMsk];
+					int mask_data = imgDetect.at<uchar>(i, j); //pMaskImg[i + j * widthstepMsk];
 
 					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 2] = mask_data > 0 ? 255 : 0;
 					((BYTE *) (frame_copy->imageData))[i * 3 + j * frame_copy->widthStep + 1] = mask_data > 0 ? 255 : 0;
@@ -193,6 +200,7 @@ int main(int argc, char *argv[])
 			char bufbuf[1000];
 			sprintf(bufbuf, "./results/%s_frm%05d.png", test_file, frame_num);
 			cvSaveImage(bufbuf, frame_copy);
+		}
 		}
 		//KeyBoard Process
 		switch (cvWaitKey(1)) {
