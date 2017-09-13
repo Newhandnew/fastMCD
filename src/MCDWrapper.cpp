@@ -84,12 +84,12 @@ void MCDWrapper::Run()
 	rt_total = rt_motionComp + rt_modelUpdate;
 
 	// Debug display of individual maps
-	cv::Mat mean = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Mean[0]);
-	cv::imshow("mean",mean/255.0);
-	cv::Mat var = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Var[0]);
-	cv::imshow("var",var/255.0);
-	cv::Mat age = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Age[0]);
-	cv::imshow("age",age/255.0);
+	// cv::Mat mean = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Mean[0]);
+	// cv::imshow("mean",mean/255.0);
+	// cv::Mat var = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Var[0]);
+	// cv::imshow("var",var/255.0);
+	// cv::Mat age = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Age[0]);
+	// cv::imshow("age",age/255.0);
 
 	//////////////////////////////////////////////////////////////////////////
 	cout << " motion compensate: " << rt_motionComp << " model update: " << rt_modelUpdate << " total time: " << rt_total << endl;
