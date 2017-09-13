@@ -135,7 +135,6 @@ int main(int argc, char *argv[])
 
 		}
 		Mat imgDetect = mcdwrapper->getDetectImage();
-		cout << "non zero: " << countNonZero(imgDetect) << endl;
 		if (countNonZero(imgDetect) > 0)
 		{
 			imshow("detect image", imgDetect);

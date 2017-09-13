@@ -41,7 +41,6 @@ void KLTWrapper::Init(Mat imgGray)
 	numGridCols = imgGray.cols / GRID_SIZE_W;
 	numGridRows = imgGray.rows / GRID_SIZE_H;
 
-	// Allocate Maximum possible + some more for safety
 	MAX_COUNT = (numGridCols + 1) * (numGridRows + 1);
 
 	InitFeatures();

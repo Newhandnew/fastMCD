@@ -26,15 +26,10 @@
 /* Basic Includes                                                       */
 /************************************************************************/
 #include	<iostream>
-#include	<cstdlib>
-#include	<cstring>
-#include	<vector>
-#include	<algorithm>
 /************************************************************************/
 /* Includes for the OpenCV                                              */
-#include "opencv2/opencv.hpp" 
-// #include	<highgui.h>
-// #include	<opencv2/features2d/features2d.hpp>
+#include "opencv2/opencv.hpp"
+#include "opencv2/core/utility.hpp" 
 
 // Inlcludes for this wrapper
 #include "KLTWrapper.hpp"
@@ -50,16 +45,11 @@ class MCDWrapper {
 /************************************************************************/
  private:
 
-	int frm_cnt;
-
 	Mat detect_img;
-
 	/* Note that the variable names are legacy */
 	KLTWrapper m_LucasKanade;
 	Mat imgFrame;
-	// IplImage *imgIplTemp;
 	Mat imgGray;
-	// Mat imgGrayPrev;
 
 	Mat imgGaussLarge;
 	Mat imgGaussSmall;
@@ -75,7 +65,7 @@ class MCDWrapper {
 /************************************************************************/
  public:
 
-	 MCDWrapper();
+	MCDWrapper();
 	~MCDWrapper();
 
 	void Init(Mat imgInput);

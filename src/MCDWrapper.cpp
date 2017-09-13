@@ -22,30 +22,9 @@
 #ifndef	_MCDWRAPPER_CPP_
 #define	_MCDWRAPPER_CPP_
 
-#include <ctime>
-#include <cstring>
 #include "MCDWrapper.hpp"
 #include "params.hpp"
 
-#if defined _WIN32 || defined _WIN64
-int gettimeofday(struct timeval *tp, int *tz)
-{
-	LARGE_INTEGER tickNow;
-	static LARGE_INTEGER tickFrequency;
-	static BOOL tickFrequencySet = FALSE;
-	if (tickFrequencySet == FALSE) {
-		QueryPerformanceFrequency(&tickFrequency);
-		tickFrequencySet = TRUE;
-	}
-	QueryPerformanceCounter(&tickNow);
-	tp->tv_sec = (long)(tickNow.QuadPart / tickFrequency.QuadPart);
-	tp->tv_usec = (long)(((tickNow.QuadPart % tickFrequency.QuadPart) * 1000000L) / tickFrequency.QuadPart);
-
-	return 0;
-}
-#else
-#include <sys/time.h>
-#endif
 
 MCDWrapper::MCDWrapper()
 {
@@ -59,57 +38,30 @@ void
  MCDWrapper::Init(Mat imgInput)
 {
 
-	frm_cnt = 0;
-	// imgFrame = 	cvarrToMat(in_imgIpl);
 	imgFrame = imgInput;
-	// Allocate
-	// imgIplTemp = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	// imgGray = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	// imgGrayPrev = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	// imgGaussLarge = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	// imgGaussSmall = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-	// imgDOG = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-
-	// detect_img = cvCreateImage(cvSize(in_imgIpl->width, in_imgIpl->height), IPL_DEPTH_8U, 1);
-
-	//TODO directly retrieve imgIpl (change to Mat later)
-
 	// Smoothing using median filter
 	cvtColor(imgFrame, imgGray, CV_RGB2GRAY);
 	medianBlur(imgGray, imgGray, 5);
 	imshow("blur", imgGray);
-	waitKey();
-	// Mat matGray = cvarrToMat(imgGray);
+
 	m_LucasKanade.Init(imgGray);
 
-	// *imgIplTemp = IplImage(imgGray);
 	BGModel.init(imgGray);
-
-	// imgGray.copyTo(imgGrayPrev);
 }
 
 void MCDWrapper::Run()
 {
-	frm_cnt++;
-
-	timeval tic, toc, tic_total, toc_total;
-	float rt_preProc;	// pre Processing time
+	float tic, tic_total;
 	float rt_motionComp;	// motion Compensation time
 	float rt_modelUpdate;	// model update time
 	float rt_total;		// Background Subtraction time
 
-	//--TIME START
 	cvtColor(imgFrame, imgGray, CV_RGB2GRAY);
-	gettimeofday(&tic, NULL);
 	// Smmothign using median filter
 	medianBlur(imgGray, imgGray, 5);
 
-	//--TIME END
-	gettimeofday(&toc, NULL);
-	rt_preProc = (float)(toc.tv_usec - tic.tv_usec) / 1000.0;
-
 	//--TIME START
-	gettimeofday(&tic, NULL);
+	tic = (float)getTickCount();
 	// Calculate Backward homography
 	// Get H
 	double h[9];
@@ -118,34 +70,29 @@ void MCDWrapper::Run()
 	BGModel.motionCompensate(h);
 
 	//--TIME END
-	gettimeofday(&toc, NULL);
-	rt_motionComp = (float)(toc.tv_usec - tic.tv_usec) / 1000.0;
+	tic_total = (float)getTickCount() - tic;
+	rt_motionComp = tic_total / (float)getTickFrequency() * 1000;
 
 	//--TIME START
-	gettimeofday(&tic, NULL);
+	tic = (float)getTickCount();
 	// Update BG Model and Detect
 	detect_img = BGModel.update(imgGray);
 	//--TIME END
-	gettimeofday(&toc, NULL);
-	rt_modelUpdate = (float)(toc.tv_usec - tic.tv_usec) / 1000.0;
+	tic_total = (float)getTickCount() - tic;
+	rt_modelUpdate = tic_total / (float)getTickFrequency() * 1000;
 
-	rt_total = rt_preProc + rt_motionComp + rt_modelUpdate;
+	rt_total = rt_motionComp + rt_modelUpdate;
 
 	// Debug display of individual maps
-	// cv::Mat mean = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Mean[0]);
-	// cv::imshow("mean",mean/255.0);
-	// cv::Mat var = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Var[0]);
-	// cv::imshow("var",var/255.0);b
-	// cv::Mat age = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Age[0]);
-	// cv::imshow("age",age/255.0);
+	cv::Mat mean = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Mean[0]);
+	cv::imshow("mean",mean/255.0);
+	cv::Mat var = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Var[0]);
+	cv::imshow("var",var/255.0);
+	cv::Mat age = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Age[0]);
+	cv::imshow("age",age/255.0);
 
 	//////////////////////////////////////////////////////////////////////////
-	// Debug Output
-	for (int i = 0; i < 100; ++i) {
-		printf("\b");
-	}
-	printf("PP: %.2f(ms)\tOF: %.2f(ms)\tBGM: %.2f(ms)\tTotal time: \t%.2f(ms) \n", MAX(0.0, rt_preProc), MAX(0.0, rt_motionComp), MAX(0.0, rt_modelUpdate), MAX(0.0, rt_total));
-
+	cout << " motion compensate: " << rt_motionComp << " model update: " << rt_modelUpdate << " total time: " << rt_total << endl;
 	// Uncomment this block if you want to save runtime to txt
 	// if(rt_preProc >= 0 && rt_motionComp >= 0 && rt_modelUpdate >= 0 && rt_total >= 0){
 	//      FILE* fileRunTime = fopen("runtime.txt", "a");
@@ -153,7 +100,6 @@ void MCDWrapper::Run()
 	//      fclose(fileRunTime);
 	// }
 
-	// imgGray.copyTo(imgGrayPrev);
 	cvWaitKey(10);
 
 }
