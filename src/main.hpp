@@ -19,9 +19,13 @@
 // SOFTWARE IS PROVIDED ``AS IS''  AND WITHOUT ANY WARRANTIES.  USE AT
 // YOUR OWN RISK!
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#include "opencv2/opencv.hpp" 
-
+// #include <stdio.h>
+// #include <stdlib.h>
+#include <iostream>
+#include "opencv2/opencv.hpp"
+#include "opencv2/core/utility.hpp"
+#include <sys/stat.h>
 #include "MCDWrapper.hpp"
+
+using namespace std;
+using namespace cv;

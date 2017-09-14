@@ -100,8 +100,6 @@ void MCDWrapper::Run()
 	//      fclose(fileRunTime);
 	// }
 
-	cvWaitKey(10);
-
 }
 
 Mat MCDWrapper::getDetectImage()

@@ -109,7 +109,6 @@ void KLTWrapper::RunTrack(Mat imgGray)
 	    imshow("current corners", copyCurrentGray);
 		cout << "count: " << count << endl;
 		cout << "status size: " << status.size() << endl;
-		waitKey();
 	}
 	// === end of test
 	
