@@ -37,51 +37,12 @@ ProbModel::ProbModel()
 }
 ProbModel::~ProbModel() 
 {
-	uninit();
-}
 
-void ProbModel::uninit(void) 
-{
-	if (m_DistImg != 0) {
-		delete m_DistImg;
-		m_DistImg = 0;
-	}
-	for (int i = 0; i < NUM_MODELS; ++i) 
-	{
-		if (m_Mean[i] != 0) {
-			delete m_Mean[i];
-			m_Mean[i] = 0;
-		}
-		if (m_Var[i] != 0) {
-			delete m_Var[i];
-			m_Var[i] = 0;
-		}
-		if (m_Age[i] != 0) {
-			delete m_Age[i];
-			m_Age[i] = 0;
-		}
-		if (m_Mean_Temp[i] != 0) {
-			delete m_Mean_Temp[i];
-			m_Mean_Temp[i] = 0;
-		}
-		if (m_Var_Temp[i] != 0) {
-			delete m_Var_Temp[i];
-			m_Var_Temp[i] = 0;
-		}
-		if (m_Age_Temp[i] != 0) {
-			delete m_Age_Temp[i];
-			m_Age_Temp[i] = 0;
-		}
-	}
-	if (m_ModelIdx != 0) {
-		delete m_ModelIdx;
-		m_ModelIdx = 0;
-	}
 }
 
 void ProbModel::init(Mat imgInput) 
 {
-	uninit();
+	// uninit();
 
 	imgCurrentGray = imgInput;
 
@@ -112,23 +73,15 @@ void ProbModel::init(Mat imgInput)
 	m_ModelIdx = new int[modelWidth * modelHeight];
 
 	// update with homography I
-	double h[9];
-	h[0] = 1.0;
-	h[1] = 0.0;
-	h[2] = 0.0;
-	h[3] = 0.0;
-	h[4] = 1.0;
-	h[5] = 0.0;
-	h[6] = 0.0;
-	h[7] = 0.0;
-	h[8] = 1.0;
+	matHomography = Mat::eye(3, 3, CV_64F);
 
-	motionCompensate(h);
+	motionCompensate(matHomography);
 	update(Mat());
 }
 
-void ProbModel::motionCompensate(double h[9]) 
+void ProbModel::motionCompensate(Mat inputHomography) 
 {
+	matHomography = inputHomography;
 	int curModelWidth = modelWidth;
 	int curModelHeight = modelHeight;
 	// compensate models for the current view
@@ -144,9 +97,9 @@ void ProbModel::motionCompensate(double h[9])
 			Y = BLOCK_SIZE * j + BLOCK_SIZE / 2.0;
 
 			// transformed coordinates with h
-			float newW = h[6] * X + h[7] * Y + h[8];
-			float newX = (h[0] * X + h[1] * Y + h[2]) / newW;
-			float newY = (h[3] * X + h[4] * Y + h[5]) / newW;
+			float newW = matHomography.at<double>(2, 0) * X +matHomography.at<double>(2, 1) * Y + matHomography.at<double>(2, 2);
+			float newX = (matHomography.at<double>(0, 0) * X + matHomography.at<double>(0, 1) * Y + matHomography.at<double>(0, 2)) / newW;
+			float newY = (matHomography.at<double>(1, 0) * X + matHomography.at<double>(1, 1) * Y + matHomography.at<double>(1, 2)) / newW;
 
 			// transformed i,j coordinates of old position
 			float newI = newX / BLOCK_SIZE;
@@ -370,7 +323,6 @@ Mat ProbModel::update(Mat imgGray)
 	{
 		for (int bIdx_i = 0; bIdx_i < curModelWidth; bIdx_i++) 
 		{
-
 			// base (i,j) for this block
 			int idx_base_i;
 			int idx_base_j;

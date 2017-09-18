@@ -41,14 +41,11 @@ void KLTWrapper::Init(Mat imgGray)
 	numGridCols = imgGray.cols / GRID_SIZE_W;
 	numGridRows = imgGray.rows / GRID_SIZE_H;
 
-	MAX_COUNT = (numGridCols + 1) * (numGridRows + 1);
-
 	InitFeatures();
 
 	imgGray.copyTo(imgPrevGray);
 	// Init homography
-	for (int i = 0; i < 9; i++)
-		matH[i] = i / 3 == i % 3 ? 1 : 0;
+	matHomography = Mat::eye(3, 3, CV_64F);
 }
 
 void KLTWrapper::InitFeatures()
@@ -70,7 +67,8 @@ void KLTWrapper::InitFeatures()
 void KLTWrapper::RunTrack(Mat imgGray)
 {
 	int i, k;
-	int nMatch[MAX_COUNT];
+	// int nMatch[MAX_COUNT];
+	vector<Point2f> gridGoodPoints, currentGoodPoints;
 
 	if (imgPrevGray.empty()) 
 	{
@@ -82,7 +80,8 @@ void KLTWrapper::RunTrack(Mat imgGray)
 		for (i = k = 0; i < status.size(); i++) {
 			if (status[i]) 
 			{	
-				nMatch[k] = i;
+	            gridGoodPoints.push_back(gridPoints[i]);
+	            currentGoodPoints.push_back(currentPoints[i]);
 				k++;
 			}
 		}
@@ -96,15 +95,15 @@ void KLTWrapper::RunTrack(Mat imgGray)
 		imgPrevGray.copyTo(copyPrevGray);
 		imgGray.copyTo(copyCurrentGray);
 
-		for( size_t i = 0; i < gridPoints.size(); i++ )
+		for( size_t i = 0; i < gridGoodPoints.size(); i++ )
 	    {
-	        cv::circle( copyPrevGray, gridPoints[i], 5, cv::Scalar( 255. ), -1 );
+	        cv::circle( copyPrevGray, gridGoodPoints[i], 5, cv::Scalar( 255. ), -1 );
 	    }
 	    imshow("prev corners", copyPrevGray);
 
-	    for( size_t i = 0; i < currentPoints.size(); i++ )
+	    for( size_t i = 0; i < currentGoodPoints.size(); i++ )
 	    {
-	        cv::circle( copyCurrentGray, currentPoints[i], 5, cv::Scalar( 255. ), -1 );
+	        cv::circle( copyCurrentGray, currentGoodPoints[i], 5, cv::Scalar( 255. ), -1 );
 	    }
 	    imshow("current corners", copyCurrentGray);
 		cout << "count: " << count << endl;
@@ -114,33 +113,16 @@ void KLTWrapper::RunTrack(Mat imgGray)
 	
 	if (count >= 10) 
 	{
-		MakeHomoGraphy(nMatch, count);
+		matHomography = findHomography( currentGoodPoints, gridGoodPoints, CV_RANSAC );
 	} 
 	else 
 	{
-		for (int ii = 0; ii < 9; ++ii) 
-		{
-			matH[ii] = ii % 3 == ii / 3 ? 1.0f : 0.0f;
-		}
+		matHomography = Mat::eye(3, 3, CV_64F);
 	}
 	imgGray.copyTo(imgPrevGray);
 }
 
-void KLTWrapper::GetHomography(double *pmatH)
+Mat KLTWrapper::GetHomography()
 {
-	memcpy(pmatH, matH, sizeof(matH));
-}
-
-void KLTWrapper::MakeHomoGraphy(int *pnMatch, int nCnt)
-{
-	Mat _h = Mat(3, 3, CV_64F);
-	_h = findHomography( currentPoints, gridPoints, CV_RANSAC );
-	int i, j;
-	for (i = 0; i < _h.cols; i++)
-	{
-		for (j = 0; j < _h.rows; j++)
-		{
-			matH[i*3 + j] = _h.at<double>(i,j);
-		}
-	}
+	return matHomography;
 }

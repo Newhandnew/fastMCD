@@ -40,36 +40,36 @@ using namespace cv;
 
 class ProbModel 
 {
- private:
-	Mat imgCurrentGray;
-	float *m_DistImg;
+ 	private:
+		Mat imgCurrentGray;
+		float *m_DistImg;
 
-	float *m_Mean[NUM_MODELS];
-	float *m_Var[NUM_MODELS];
-	float *m_Age[NUM_MODELS];
+		float *m_Mean[NUM_MODELS];
+		float *m_Var[NUM_MODELS];
+		float *m_Age[NUM_MODELS];
 
-	float *m_Mean_Temp[NUM_MODELS];
-	float *m_Var_Temp[NUM_MODELS];
-	float *m_Age_Temp[NUM_MODELS];
+		float *m_Mean_Temp[NUM_MODELS];
+		float *m_Var_Temp[NUM_MODELS];
+		float *m_Age_Temp[NUM_MODELS];
 
-	int *m_ModelIdx;
+		int *m_ModelIdx;
 
-	int modelWidth;
-	int modelHeight;
+		int modelWidth;
+		int modelHeight;
 
-	int obsWidth;
-	int obsHeight;
+		int obsWidth;
+		int obsHeight;
 
- public:
-	 ProbModel();
-	~ProbModel();
+		Mat matHomography;
 
-	void uninit(void);
+ 	public:
+		ProbModel();
+		~ProbModel();
 
-	void init(Mat imgInput);
+		void init(Mat imgInput);
 
-	void motionCompensate(double h[9]);
+		void motionCompensate(Mat inputHomography);
 
-	Mat update(Mat imgGray);
+		Mat update(Mat imgGray);
 };
 #endif				// _PROB_MODEL_H_

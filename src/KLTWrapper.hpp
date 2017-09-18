@@ -34,20 +34,16 @@ typedef unsigned char BYTE;
 
 class KLTWrapper {
  private:
-	// IplImage *temp;
-	// IplImage *maskimg;
 
-	// For LK
 	Mat imgPrevGray;
 	int win_size;
-	int MAX_COUNT;
 	int numGridCols, numGridRows;
 	vector<Point2f> gridPoints, currentPoints;
 
 	int count;
 
 	// For Homography Matrix
-	double matH[9];
+	Mat matHomography;
 
 	int maxLevel;
 	vector <float> err;
@@ -56,7 +52,6 @@ class KLTWrapper {
 	char fTest;
 
  private:
-	void MakeHomoGraphy(int *pnMatch, int nCnt);
 	void InitFeatures();
 
  public:
@@ -65,5 +60,5 @@ class KLTWrapper {
 
 	void Init(Mat imgGray);
 	void RunTrack(Mat imgGray);	// with MakeHomography
-	void GetHomography(double *pmatH);
+	Mat GetHomography();
 };

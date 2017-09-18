@@ -42,7 +42,6 @@ void
 	// Smoothing using median filter
 	cvtColor(imgFrame, imgGray, CV_RGB2GRAY);
 	medianBlur(imgGray, imgGray, 5);
-	imshow("blur", imgGray);
 
 	m_LucasKanade.Init(imgGray);
 
@@ -64,10 +63,9 @@ void MCDWrapper::Run()
 	tic = (float)getTickCount();
 	// Calculate Backward homography
 	// Get H
-	double h[9];
 	m_LucasKanade.RunTrack(imgGray);
-	m_LucasKanade.GetHomography(h);
-	BGModel.motionCompensate(h);
+	Mat matHomography = m_LucasKanade.GetHomography();
+	BGModel.motionCompensate(matHomography);
 
 	//--TIME END
 	tic_total = (float)getTickCount() - tic;
