@@ -15,7 +15,7 @@ string getFileName(string inputPath)
 	}
 	else
 	{
-		return "";
+		return inputPath;
 	}
 }
 
@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
 	CommandLineParser parser( argc, argv, keys );
     String video_path = parser.get<String>(0);
     string videoName = getFileName(video_path);
+    cout << "video name: " << videoName << endl;
     int flag_output_image = parser.get<int>(1);
 
 	struct stat st = {0};
@@ -81,7 +82,7 @@ int main(int argc, char *argv[])
 			Mat imgProposed;
 			Mat imgRed(curFrame.size(), curFrame.type(), Scalar(0, 0, 255));
 	        imgRed.copyTo(imgProposed, imgDetect);
-	        addWeighted(curFrame , 1, imgProposed, 0.5, 0, imgOutput, 0);
+	        addWeighted(curFrame , 1, imgProposed, 0.6, 0, imgOutput, 0);
 
 			stringstream ss;
 			ss << frame_num;
@@ -95,7 +96,7 @@ int main(int argc, char *argv[])
 				stringstream ss;
 				ss << "./results/" << videoName << "_frame" << frame_num << ".png";
 								cout << "write: " <<ss.str() << endl;
-				imwrite(ss.str(), imgOutput);
+				imwrite(ss.str(), imgDetect);
 			}
 		}
 
