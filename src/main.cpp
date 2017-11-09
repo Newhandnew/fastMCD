@@ -34,7 +34,18 @@ int main(int argc, char *argv[])
 	}
 
     VideoCapture cap;
-    cap.open(video_path);
+    if(video_path == "0")
+    {
+    	cap.open(0);	
+   	}
+   	else if(video_path == "1")
+   	{
+   		cap.open(1);
+   	}
+   	else
+   	{
+   		cap.open(video_path);
+   	}
 
     if( !cap.isOpened() )
     {
@@ -50,7 +61,7 @@ int main(int argc, char *argv[])
 
 	namedWindow(window_name, CV_WINDOW_AUTOSIZE);
 
-	int frame_num;
+	int frame_num = 1;
 
 	/************************************************************************/
 	/*  The main process loop                                               */
@@ -63,13 +74,18 @@ int main(int argc, char *argv[])
             cout << "end of video" << endl;
             return -1;
         }
-        stringstream ss;
-        ss << cap.get(CAP_PROP_POS_FRAMES);
-        ss >> frame_num;
+
+        if(video_path != "0" && video_path != "1")
+     	{
+     		stringstream ss;
+        	ss << cap.get(CAP_PROP_POS_FRAMES);
+        	ss >> frame_num;
+     	}   
 
 		if (frame_num == 1) 
 		{
 			mcdwrapper->Init(curFrame);
+			frame_num++;
 		} 
 		else {
 			// Run detection
@@ -111,8 +127,6 @@ int main(int argc, char *argv[])
 				cout << "pause" << endl;
 				waitKey();
 		}
-		++frame_num;
-
 	}
 
 	return 0;
