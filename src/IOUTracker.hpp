@@ -11,11 +11,14 @@ class IOUTracker {
  private:
  	Rect bbox;
  	int frameCount;
+ 	Scalar color;
 
  public:
-	 KLTWrapper(void);
-	~KLTWrapper(void);
-	void IOUTracker::initial(Rect inputBbox);
-	float iou(Rect bbox1, Rect bbox2);
+	 IOUTracker(Rect inputBbox);
+	// ~IOUTracker(void);
+	// void initial(Rect inputBbox);
+	int getFrameCount(void);
+	void setFrameCount(int value);
+	float iou(Rect inputBbox);
 
 };

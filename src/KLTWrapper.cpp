@@ -28,7 +28,7 @@ KLTWrapper::KLTWrapper(void)
 	win_size = 10;
 	count = 0;
 	maxLevel = 3;
-	fTest = 1;  // test program
+	fTest = 0;  // test program
 }
 
 KLTWrapper::~KLTWrapper(void)

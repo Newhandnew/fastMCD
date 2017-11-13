@@ -1,20 +1,31 @@
 #include "IOUTracker.hpp"
 
 
-IOUTracker::IOUTracker(void)
-{
-
-}
-
-IOUTracker::~IOUTracker(void)
-{
-
-}
-
-void IOUTracker::initial(Rect inputBbox)
+IOUTracker::IOUTracker(Rect inputBbox)
 {
 	bbox = inputBbox;
 	frameCount = 1;
+	color = Scalar(rand() % 255, rand() % 255, rand() % 255);
+}
+
+// IOUTracker::~IOUTracker(void)
+// {
+
+// }
+
+// void IOUTracker::initial(Rect inputBbox)
+// {
+
+// }
+
+int IOUTracker::getFrameCount(void)
+{
+	return frameCount;
+}
+
+void IOUTracker::setFrameCount(int value)
+{
+	frameCount = value;
 }
 
 float IOUTracker::iou(Rect inputBbox)

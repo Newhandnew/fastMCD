@@ -84,6 +84,8 @@ int main(int argc, char *argv[])
 
 	int frame_num = 1;
 
+	vector<IOUTracker> activeTracker;
+
 	/************************************************************************/
 	/*  The main process loop                                               */
 	/************************************************************************/
@@ -139,6 +141,7 @@ int main(int argc, char *argv[])
 
 	        int minBoundingArea = 250;
     		int numLimitBounding = 10;
+    		vector<Rect> detectedObjects;
 	        if (numContours < numLimitBounding)
 	        {
 	            for( int i = 0; i < numContours; i++ )
@@ -148,11 +151,51 @@ int main(int argc, char *argv[])
 	                    // Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
 	                    // cout << contourArea(contours[i]) << endl;
 	                    Rect boundRect = boundingRect(contours[i]);
+	                    detectedObjects.push_back(boundRect);
 	                    rectangle( imgBoundingBox, Point(boundRect.x, boundRect.y), Point(boundRect.x + boundRect.width, boundRect.y + boundRect.height), Scalar(255, 0, 0), 2, 8, 0 );
 	                }
 	            }
 	        }
         	imshow("Bounding Box", imgBoundingBox );
+
+        	for(int i = 0; i < activeTracker.size(); i++)
+        	{	
+        		float maxIOU = 0;
+        		int maxIndex = 0;
+        		for(int j = 0; j < detectedObjects.size(); j++)
+        		{
+        			if(activeTracker[i].iou(detectedObjects[j]) > maxIOU)
+        			{
+        				maxIOU = activeTracker[i].iou(detectedObjects[j]);
+        				maxIndex = j;
+        			}
+        		}
+        		cout << "iou: " << maxIOU << endl;
+    			if(maxIOU > 0.3)
+    			{
+    				detectedObjects.erase(detectedObjects.begin() + maxIndex);
+    				cout << "add to final" << endl;
+    			}
+    			else
+    			{
+    				if(activeTracker[i].getFrameCount() == 0)
+    				{
+    					activeTracker.erase(activeTracker.begin()+i);
+    					cout << "activeTracker count" << activeTracker.size() << endl;
+    				}
+    				else
+    				{
+    					activeTracker[i].setFrameCount(0);
+    				}
+    			}
+        	}
+        	cout << "dtectedObjects count:" << detectedObjects.size() << endl;
+        	for(int i = 0; i < detectedObjects.size(); i++)
+        	{
+        		IOUTracker tracker(detectedObjects[i]);
+        		// tracker.initial(detectedObjects[i]);
+        		activeTracker.push_back(tracker);
+        	}
 
 			if (flag_output_image == 1) 
 			{
