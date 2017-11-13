@@ -19,6 +19,27 @@ string getFileName(string inputPath)
 	}
 }
 
+Mat getSeperatedElement(Mat inputImage, bool showImage)
+{
+	int erosion_type = MORPH_RECT;
+    int erosion_size = 1;
+	Mat erosion_element = getStructuringElement(erosion_type, Size( 2*erosion_size + 1, 2*erosion_size+1 ),Point( erosion_size, erosion_size));
+	int dilation_type = MORPH_RECT;
+    int dilation_size = 7;
+	Mat dilation_element = getStructuringElement(dilation_type, Size( 2*dilation_size + 1, 2*dilation_size+1 ),Point( dilation_size, dilation_size));
+
+
+	Mat imgErosion, imgDilation;
+    erode(inputImage, imgErosion, erosion_element);
+    dilate(imgErosion, imgDilation, dilation_element);//Mat(), Point(-1,-1), dilationIteration);
+    if(showImage)
+    {
+    	imshow("erosion", imgErosion);
+    	imshow("dilation", imgDilation);
+    }
+    return imgDilation;
+}
+
 int main(int argc, char *argv[])
 {
 	CommandLineParser parser( argc, argv, keys );
@@ -93,7 +114,6 @@ int main(int argc, char *argv[])
 			imgDetect = mcdwrapper->getDetectImage();
 			imshow("detect image", imgDetect);
 
-
 			// Display detection results as overlay
 			Mat imgProposed;
 			Mat imgRed(curFrame.size(), curFrame.type(), Scalar(0, 0, 255));
@@ -106,6 +126,33 @@ int main(int argc, char *argv[])
 
 			// Show image
 			imshow(window_name, imgOutput);
+
+			Mat imgDilation = getSeperatedElement(imgDetect, true);
+
+			Mat imgBoundingBox;
+			vector<vector<Point> > contours;
+	        vector<Vec4i> hierarchy;
+	        findContours( imgDilation, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
+	        int numContours = contours.size();
+	        cout << "bounding box number: " << numContours << endl;
+	        curFrame.copyTo(imgBoundingBox);
+
+	        int minBoundingArea = 250;
+    		int numLimitBounding = 10;
+	        if (numContours < numLimitBounding)
+	        {
+	            for( int i = 0; i < numContours; i++ )
+	            {
+	                if (contourArea(contours[i]) > minBoundingArea)
+	                {
+	                    // Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+	                    // cout << contourArea(contours[i]) << endl;
+	                    Rect boundRect = boundingRect(contours[i]);
+	                    rectangle( imgBoundingBox, Point(boundRect.x, boundRect.y), Point(boundRect.x + boundRect.width, boundRect.y + boundRect.height), Scalar(255, 0, 0), 2, 8, 0 );
+	                }
+	            }
+	        }
+        	imshow("Bounding Box", imgBoundingBox );
 
 			if (flag_output_image == 1) 
 			{

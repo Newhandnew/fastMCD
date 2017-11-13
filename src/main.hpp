@@ -26,6 +26,7 @@
 #include "opencv2/core/utility.hpp"
 #include <sys/stat.h>
 #include "MCDWrapper.hpp"
+#include "IOUTracker.hpp"
 
 using namespace std;
 using namespace cv;
