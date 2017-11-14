@@ -11,14 +11,17 @@ class IOUTracker {
  private:
  	Rect bbox;
  	int frameCount;
+ 	int maxFrameCount;
  	Scalar color;
 
  public:
 	 IOUTracker(Rect inputBbox);
-	// ~IOUTracker(void);
-	// void initial(Rect inputBbox);
 	int getFrameCount(void);
 	void setFrameCount(int value);
+	void addFrameCount(void);
+	void subFrameCount(void);
+	Scalar getColor(void);
+	void setBbox(Rect inputBbox);
 	float iou(Rect inputBbox);
 
 };

@@ -4,19 +4,10 @@
 IOUTracker::IOUTracker(Rect inputBbox)
 {
 	bbox = inputBbox;
+	maxFrameCount = 6;
 	frameCount = 1;
 	color = Scalar(rand() % 255, rand() % 255, rand() % 255);
 }
-
-// IOUTracker::~IOUTracker(void)
-// {
-
-// }
-
-// void IOUTracker::initial(Rect inputBbox)
-// {
-
-// }
 
 int IOUTracker::getFrameCount(void)
 {
@@ -26,6 +17,32 @@ int IOUTracker::getFrameCount(void)
 void IOUTracker::setFrameCount(int value)
 {
 	frameCount = value;
+}
+
+void IOUTracker::addFrameCount(void)
+{
+	if(frameCount < maxFrameCount)
+	{
+		frameCount += 1;
+	}
+}
+
+void IOUTracker::subFrameCount(void)
+{
+	if(frameCount > 0)
+	{
+		frameCount -= 1;
+	}
+}
+
+Scalar IOUTracker::getColor(void)
+{
+	return color;
+}
+
+void IOUTracker::setBbox(Rect inputBbox)
+{
+	bbox = inputBbox;
 }
 
 float IOUTracker::iou(Rect inputBbox)
