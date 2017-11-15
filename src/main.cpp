@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
     }
 
 	MCDWrapper *mcdwrapper = new MCDWrapper();
-
+	IOUTrackWrapper *iouTrackWrapper = new IOUTrackWrapper();
 	const char window_name[] = "OUTPUT";
 
 	Mat curFrame, imgDetect, imgOutput;
@@ -83,8 +83,6 @@ int main(int argc, char *argv[])
 	namedWindow(window_name, CV_WINDOW_AUTOSIZE);
 
 	int frame_num = 1;
-
-	vector<IOUTracker> activeTracker;
 
 	/************************************************************************/
 	/*  The main process loop                                               */
@@ -142,7 +140,6 @@ int main(int argc, char *argv[])
 	        int minBoundingArea = 250;
     		int numLimitBounding = 10;
     		vector<Rect> detectedObjects;
-    		vector<Rect> finalTracking;
 
 	        if (numContours < numLimitBounding)
 	        {
@@ -150,7 +147,6 @@ int main(int argc, char *argv[])
 	            {
 	                if (contourArea(contours[i]) > minBoundingArea)
 	                {
-	                    // Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
 	                    // cout << contourArea(contours[i]) << endl;
 	                    Rect boundRect = boundingRect(contours[i]);
 	                    detectedObjects.push_back(boundRect);
@@ -160,63 +156,7 @@ int main(int argc, char *argv[])
 	        }
         	imshow("Bounding Box", imgBoundingBox );
 
-			cout << "activeTracker count: " << activeTracker.size() << endl;
-        	for(int i = 0; i < activeTracker.size(); i++)
-        	{	
-        		float maxIOU = 0;
-        		int maxIndex = 0;
-        		for(int j = 0; j < detectedObjects.size(); j++)
-        		{
-        			float iou = activeTracker[i].iou(detectedObjects[j]);
-        			if(iou > maxIOU)
-        			{
-        				maxIOU = iou;
-        				maxIndex = j;
-        			}
-        		}
-        		cout << "iou" << i << ": " << maxIOU << endl;
-        		float iouThreshold = 0.3;
-    			if(maxIOU > iouThreshold)
-    			{
-    				finalTracking.push_back(detectedObjects[maxIndex]);
-    				activeTracker[i].setBbox(detectedObjects[maxIndex]);
-    				rectangle( curFrame, Point(detectedObjects[maxIndex].x, detectedObjects[maxIndex].y), Point(detectedObjects[maxIndex].x + detectedObjects[maxIndex].width, detectedObjects[maxIndex].y + detectedObjects[maxIndex].height), activeTracker[i].getColor(), 2, 8, 0 );
-    	// 			stringstream ss;
-					// ss << i;
-    	// 			putText(curFrame, ss.str(), Point(detectedObjects[maxIndex].x, detectedObjects[maxIndex].y), FONT_HERSHEY_SIMPLEX, 1 , cv::Scalar(255,0,0));
-    				detectedObjects.erase(detectedObjects.begin() + maxIndex);
-    				activeTracker[i].addFrameCount();
-    				cout << "add to final " << i << endl;
-    			}
-    			else
-    			{
-    				if(activeTracker[i].getFrameCount() == 0)
-    				{
-    					cout << "erase active" << endl;
-    					activeTracker.erase(activeTracker.begin()+i);
-    					i--;
-    				}
-    				else
-    				{
-    					cout << "set frame count" << endl;
-    					activeTracker[i].subFrameCount();
-    				}
-    			}
-        	}
-        	cout << "detectedObjects count: " << detectedObjects.size() << endl;
-        	for(int i = 0; i < detectedObjects.size(); i++)
-        	{
-        		IOUTracker tracker(detectedObjects[i]);
-        		// tracker.initial(detectedObjects[i]);
-        		activeTracker.push_back(tracker);
-        	}
-
-			cout << "final tracking: " << finalTracking.size() << endl;
-			// for(int i = 0; i < finalTracking.size(); i++)
-			// {
-			// 	rectangle( curFrame, Point(finalTracking[i].x, finalTracking[i].y), Point(finalTracking[i].x + finalTracking[i].width, finalTracking[i].y + finalTracking[i].height), Scalar(255, 0, 0), 2, 8, 0 );
-			// }
-			imshow("tracking", curFrame );
+        	iouTrackWrapper->runTrack(curFrame, detectedObjects);
 
 			if (flag_output_image == 1) 
 			{

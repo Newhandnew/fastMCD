@@ -1,25 +1,25 @@
-#include "IOUTracker.hpp"
+#include "ActiveTracker.hpp"
 
 
-IOUTracker::IOUTracker(Rect inputBbox)
+ActiveTracker::ActiveTracker(Rect inputBbox)
 {
 	bbox = inputBbox;
-	maxFrameCount = 6;
-	frameCount = 1;
+	maxFrameCount = 16;
+	frameCount = 3;
 	color = Scalar(rand() % 255, rand() % 255, rand() % 255);
 }
 
-int IOUTracker::getFrameCount(void)
+int ActiveTracker::getFrameCount(void)
 {
 	return frameCount;
 }
 
-void IOUTracker::setFrameCount(int value)
+void ActiveTracker::setFrameCount(int value)
 {
 	frameCount = value;
 }
 
-void IOUTracker::addFrameCount(void)
+void ActiveTracker::addFrameCount(void)
 {
 	if(frameCount < maxFrameCount)
 	{
@@ -27,7 +27,7 @@ void IOUTracker::addFrameCount(void)
 	}
 }
 
-void IOUTracker::subFrameCount(void)
+void ActiveTracker::subFrameCount(void)
 {
 	if(frameCount > 0)
 	{
@@ -35,17 +35,17 @@ void IOUTracker::subFrameCount(void)
 	}
 }
 
-Scalar IOUTracker::getColor(void)
+Scalar ActiveTracker::getColor(void)
 {
 	return color;
 }
 
-void IOUTracker::setBbox(Rect inputBbox)
+void ActiveTracker::setBbox(Rect inputBbox)
 {
 	bbox = inputBbox;
 }
 
-float IOUTracker::iou(Rect inputBbox)
+float ActiveTracker::iou(Rect inputBbox)
 {
 	int box1_x1 = inputBbox.x;
 	int box1_x2 = inputBbox.x + inputBbox.width;

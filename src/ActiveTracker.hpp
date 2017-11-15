@@ -7,7 +7,7 @@ using namespace cv;
 using namespace std;  
 
 
-class IOUTracker {
+class ActiveTracker {
  private:
  	Rect bbox;
  	int frameCount;
@@ -15,7 +15,7 @@ class IOUTracker {
  	Scalar color;
 
  public:
-	 IOUTracker(Rect inputBbox);
+	ActiveTracker(Rect inputBbox);
 	int getFrameCount(void);
 	void setFrameCount(int value);
 	void addFrameCount(void);
