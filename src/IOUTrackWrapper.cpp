@@ -54,5 +54,5 @@ void IOUTrackWrapper::runTrack(Mat inputImage, vector<Rect> detectedObjects)
 	}
 
 	cout << "final tracking: " << finalTracking.size() << endl;
-	imshow("tracking", curFrame );
+	// imshow("tracking", curFrame );
 }

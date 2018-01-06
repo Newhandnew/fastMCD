@@ -76,19 +76,21 @@ int main(int argc, char *argv[])
 
 	MCDWrapper *mcdwrapper = new MCDWrapper();
 	IOUTrackWrapper *iouTrackWrapper = new IOUTrackWrapper();
-	const char window_name[] = "OUTPUT";
 
-	Mat curFrame, imgDetect, imgOutput;
-
-	namedWindow(window_name, CV_WINDOW_AUTOSIZE);
+	Mat curFrame, imgDetect, imgOutput, imgResizedFrame;
+	Size imageSize = Size(600, 600);
 
 	int frame_num = 1;
 
+	float tic, tic_total;
+	float tic2, tic_total2;
+	float timeTracking, timeTotal;
 	/************************************************************************/
 	/*  The main process loop                                               */
 	/************************************************************************/
 	while (1) 
 	{	// the main loop
+		tic = (float)getTickCount();
         cap >> curFrame;
         if(curFrame.empty())
         {
@@ -103,39 +105,41 @@ int main(int argc, char *argv[])
         	ss >> frame_num;
      	}   
 
+     	resize(curFrame, imgResizedFrame, imageSize);
+
 		if (frame_num == 1) 
 		{
-			mcdwrapper->Init(curFrame);
+			mcdwrapper->Init(imgResizedFrame);
 			frame_num++;
 		} 
 		else {
 			// Run detection
 			mcdwrapper->Run();
 			imgDetect = mcdwrapper->getDetectImage();
-			imshow("detect image", imgDetect);
+			// imshow("detect image", imgDetect);
 
 			// Display detection results as overlay
-			Mat imgProposed;
-			Mat imgRed(curFrame.size(), curFrame.type(), Scalar(0, 0, 255));
-	        imgRed.copyTo(imgProposed, imgDetect);
-	        addWeighted(curFrame , 1, imgProposed, 0.6, 0, imgOutput, 0);
+			// Mat imgProposed;
+			// Mat imgRed(imgResizedFrame.size(), imgResizedFrame.type(), Scalar(0, 0, 255));
+	  //       imgRed.copyTo(imgProposed, imgDetect);
+	  //       addWeighted(imgResizedFrame , 1, imgProposed, 0.6, 0, imgOutput, 0);
 
-			stringstream ss;
-			ss << frame_num;
-			putText(imgOutput, ss.str(), cv::Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,255,0));
+			// stringstream ss;
+			// ss << frame_num;
+			// putText(imgOutput, ss.str(), cv::Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5 , cv::Scalar(255,255,0));
 
 			// Show image
-			imshow(window_name, imgOutput);
+			// imshow("Output", imgOutput);
 
-			Mat imgDilation = getSeperatedElement(imgDetect, true);
-
+			// tracking program
+			Mat imgDilation = getSeperatedElement(imgDetect, false);
 			Mat imgBoundingBox;
 			vector<vector<Point> > contours;
 	        vector<Vec4i> hierarchy;
 	        findContours( imgDilation, contours, hierarchy, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE, Point(0, 0) );
 	        int numContours = contours.size();
 	        cout << "bounding box number: " << numContours << endl;
-	        curFrame.copyTo(imgBoundingBox);
+	        imgResizedFrame.copyTo(imgBoundingBox);
 
 	        int minBoundingArea = 250;
     		int numLimitBounding = 10;
@@ -147,17 +151,18 @@ int main(int argc, char *argv[])
 	            {
 	                if (contourArea(contours[i]) > minBoundingArea)
 	                {
-	                    // cout << contourArea(contours[i]) << endl;
 	                    Rect boundRect = boundingRect(contours[i]);
 	                    detectedObjects.push_back(boundRect);
 	                    rectangle( imgBoundingBox, Point(boundRect.x, boundRect.y), Point(boundRect.x + boundRect.width, boundRect.y + boundRect.height), Scalar(255, 0, 0), 2, 8, 0 );
 	                }
 	            }
 	        }
-        	imshow("Bounding Box", imgBoundingBox );
-
-        	iouTrackWrapper->runTrack(curFrame, detectedObjects);
-
+        	// imshow("Bounding Box", imgBoundingBox );
+			tic2 = (float)getTickCount();
+        	iouTrackWrapper->runTrack(imgResizedFrame, detectedObjects);
+	     	tic_total2 = (float)getTickCount() - tic2;
+			timeTracking = tic_total2 / (float)getTickFrequency() * 1000;
+			cout << "tracking time: " << timeTracking << endl;
 			if (flag_output_image == 1) 
 			{
 				stringstream ss;
@@ -178,6 +183,9 @@ int main(int argc, char *argv[])
 				cout << "pause" << endl;
 				waitKey();
 		}
+     	tic_total = (float)getTickCount() - tic;
+		timeTotal = tic_total / (float)getTickFrequency() * 1000;
+		cout << "total time: " << timeTotal << endl;
 	}
 
 	return 0;
