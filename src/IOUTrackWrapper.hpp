@@ -12,10 +12,11 @@ class IOUTrackWrapper {
  private:
 	vector<ActiveTracker> activeTracker;
 	float iouThreshold;
+	int activeThreshold;
 	Mat curFrame;
 
  public:
 	IOUTrackWrapper(void);
-	void runTrack(Mat inputImage, vector<Rect> detectedObjects);
+	vector<Rect> runTrack(Mat inputImage, vector<Rect> detectedObjects);
 
 };

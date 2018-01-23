@@ -63,8 +63,7 @@ void MCDWrapper::Run()
 	tic = (float)getTickCount();
 	// Calculate Backward homography
 	// Get H
-	m_LucasKanade.RunTrack(imgGray);
-	Mat matHomography = m_LucasKanade.GetHomography();
+	Mat matHomography = m_LucasKanade.GetHomography(imgGray);
 	BGModel.motionCompensate(matHomography);
 
 	//--TIME END
@@ -81,23 +80,7 @@ void MCDWrapper::Run()
 
 	rt_total = rt_motionComp + rt_modelUpdate;
 
-	// Debug display of individual maps
-	// cv::Mat mean = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Mean[0]);
-	// cv::imshow("mean",mean/255.0);
-	// cv::Mat var = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Var[0]);
-	// cv::imshow("var",var/255.0);
-	// cv::Mat age = cv::Mat(BGModel.modelHeight, BGModel.modelWidth, CV_32F, BGModel.m_Age[0]);
-	// cv::imshow("age",age/255.0);
-
-	//////////////////////////////////////////////////////////////////////////
 	cout << " motion compensate: " << rt_motionComp << " model update: " << rt_modelUpdate << " total time: " << rt_total << endl;
-	// Uncomment this block if you want to save runtime to txt
-	// if(rt_preProc >= 0 && rt_motionComp >= 0 && rt_modelUpdate >= 0 && rt_total >= 0){
-	//      FILE* fileRunTime = fopen("runtime.txt", "a");
-	//      fprintf(fileRunTime, "%.3f\t%.3f\t%.3f\t%.3f\t%.3f\n", rt_preProc, rt_motionComp, rt_modelUpdate, 0.0, rt_total);
-	//      fclose(fileRunTime);
-	// }
-
 }
 
 Mat MCDWrapper::getDetectImage()

@@ -1,12 +1,16 @@
+// input: image, detected rectangles
+// output: tracking rectangles
+
 #include "IOUTrackWrapper.hpp"
 
 
 IOUTrackWrapper::IOUTrackWrapper(void)
 {
-	iouThreshold = 0.2;
+	iouThreshold = 0.2;			// threshold for checking the same object
+	activeThreshold = 16;		// threshold for active tracking list 
 }
 
-void IOUTrackWrapper::runTrack(Mat inputImage, vector<Rect> detectedObjects)
+vector<Rect> IOUTrackWrapper::runTrack(Mat inputImage, vector<Rect> detectedObjects)
 {
 	vector<Rect> finalTracking;
 	inputImage.copyTo(curFrame);
@@ -26,11 +30,13 @@ void IOUTrackWrapper::runTrack(Mat inputImage, vector<Rect> detectedObjects)
 		}
 		if(maxIOU > iouThreshold)
 		{
-			finalTracking.push_back(detectedObjects[maxIndex]);
 			activeTracker[i].setBbox(detectedObjects[maxIndex]);
-			rectangle( curFrame, Point(detectedObjects[maxIndex].x, detectedObjects[maxIndex].y), Point(detectedObjects[maxIndex].x + detectedObjects[maxIndex].width, detectedObjects[maxIndex].y + detectedObjects[maxIndex].height), activeTracker[i].getColor(), 2, 8, 0 );
 			detectedObjects.erase(detectedObjects.begin() + maxIndex);
 			activeTracker[i].addFrameCount();
+			if(activeTracker[i].getFrameCount() > activeThreshold)
+			{
+				finalTracking.push_back(detectedObjects[maxIndex]);
+			}
 		}
 		else
 		{
@@ -54,5 +60,5 @@ void IOUTrackWrapper::runTrack(Mat inputImage, vector<Rect> detectedObjects)
 	}
 
 	cout << "final tracking: " << finalTracking.size() << endl;
-	// imshow("tracking", curFrame );
+	return finalTracking;
 }

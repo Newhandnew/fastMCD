@@ -78,13 +78,18 @@ int main(int argc, char *argv[])
 	IOUTrackWrapper *iouTrackWrapper = new IOUTrackWrapper();
 
 	Mat curFrame, imgDetect, imgOutput, imgResizedFrame;
-	Size imageSize = Size(600, 600);
+	Size imageSize = Size(500, 500);
 
 	int frame_num = 1;
 
 	float tic, tic_total;
 	float tic2, tic_total2;
 	float timeTracking, timeTotal;
+
+				int frame_width = 500;
+				int frame_height = 500;
+				VideoWriter video("out.avi",CV_FOURCC('M','J','P','G'),20, Size(frame_width,frame_height),true);
+
 	/************************************************************************/
 	/*  The main process loop                                               */
 	/************************************************************************/
@@ -121,8 +126,8 @@ int main(int argc, char *argv[])
 			// Display detection results as overlay
 			// Mat imgProposed;
 			// Mat imgRed(imgResizedFrame.size(), imgResizedFrame.type(), Scalar(0, 0, 255));
-	  //       imgRed.copyTo(imgProposed, imgDetect);
-	  //       addWeighted(imgResizedFrame , 1, imgProposed, 0.6, 0, imgOutput, 0);
+	  		// imgRed.copyTo(imgProposed, imgDetect);
+	  		// addWeighted(imgResizedFrame , 1, imgProposed, 0.6, 0, imgOutput, 0);
 
 			// stringstream ss;
 			// ss << frame_num;
@@ -141,8 +146,8 @@ int main(int argc, char *argv[])
 	        cout << "bounding box number: " << numContours << endl;
 	        imgResizedFrame.copyTo(imgBoundingBox);
 
-	        int minBoundingArea = 250;
-    		int numLimitBounding = 10;
+	        int minBoundingArea = 300;
+    		int numLimitBounding = 60;
     		vector<Rect> detectedObjects;
 
 	        if (numContours < numLimitBounding)
@@ -157,18 +162,25 @@ int main(int argc, char *argv[])
 	                }
 	            }
 	        }
-        	// imshow("Bounding Box", imgBoundingBox );
+        	imshow("Bounding Box", imgBoundingBox );
 			tic2 = (float)getTickCount();
-        	iouTrackWrapper->runTrack(imgResizedFrame, detectedObjects);
+			vector<Rect> trackingRec;
+			Mat imgTracking;
+			imgResizedFrame.copyTo(imgTracking);
+        	trackingRec = iouTrackWrapper->runTrack(imgResizedFrame, detectedObjects);
+        	for(int i = 0; i < trackingRec.size(); i++)
+        	{
+        		rectangle(imgTracking, Point(trackingRec[i].x, trackingRec[i].y), Point(trackingRec[i].x + trackingRec[i].width, trackingRec[i].y + trackingRec[i].height), Scalar(255, 0, 0), 2, 8, 0 ); //activeTracker[i].getColor()
+        	}
+        	imshow("tracking", imgTracking);
+
 	     	tic_total2 = (float)getTickCount() - tic2;
 			timeTracking = tic_total2 / (float)getTickFrequency() * 1000;
 			cout << "tracking time: " << timeTracking << endl;
+
 			if (flag_output_image == 1) 
 			{
-				stringstream ss;
-				ss << "./results/" << videoName << "_frame" << frame_num << ".png";
-								cout << "write: " <<ss.str() << endl;
-				imwrite(ss.str(), imgDetect);
+				video.write(imgTracking);
 			}
 		}
 

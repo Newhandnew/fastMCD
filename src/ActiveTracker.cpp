@@ -1,11 +1,12 @@
+// active tracker class
 #include "ActiveTracker.hpp"
 
 
 ActiveTracker::ActiveTracker(Rect inputBbox)
 {
 	bbox = inputBbox;
-	maxFrameCount = 16;
-	frameCount = 3;
+	maxFrameCount = 20;		// max count for stabilizing tracking
+	frameCount = 2;			// initial count for adding to active list
 	color = Scalar(rand() % 255, rand() % 255, rand() % 255);
 }
 
